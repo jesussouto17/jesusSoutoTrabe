@@ -1,0 +1,81 @@
+<!doctype html>
+<html id="html" lang="en">
+
+<head>
+    <meta charset="utf-8">
+</head>
+
+<body>
+    <form name="forms" id="forms" method="POST">
+        <div>
+            <label>Login
+                <input name="username" type="text" />
+            </label>
+        </div>
+        <div>
+            <label>Password
+                <input name="password" type="text" />
+            </label>
+        </div>
+        <button type="submit">Submit</button>
+    </form>
+    <span id='error' style="color: red"></span>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+    <script>
+        const formElement = document.querySelector('form#forms')
+    
+        const getFormJSON = (form) => {
+          const data = new FormData(form);
+          return Array.from(data.keys()).reduce((result, key) => {
+            result[key] = data.get(key);
+            return result;
+          }, {});
+        };
+    
+        const handler = (event) => {
+          event.preventDefault();
+          const valid = formElement.reportValidity();
+          if (valid) {
+            const result = getFormJSON(formElement);
+            
+             try {
+    
+               $.ajax({
+                  type: 'POST',
+                  url: 'http://localhost:4000/login',
+                  data: JSON.stringify(result),
+                  contentType: 'application/json',
+                  dataType: 'json',
+                  timeout: 5000,
+                  complete: function() {
+                    console.log('llega');
+                  },
+                    success: function(data) {
+                      console.log(data);
+                      let {status} = data;
+                      console.log(status);
+                      if(status==200){
+                          let {url} = data;
+                          console.log(url);
+                          window.location.href = url;
+                      }else{
+                          let {error} = data;
+                          console.log(error);
+                          document.getElementById("error").textContent = error;
+                      }
+                      console.log('process sucess');
+                   },
+    
+                    error: function(errorResponse) {
+                      console.log('process error',+errorResponse);
+                    },
+                  });             
+          }catch (error){
+            console.error(error);
+          }
+          }
+        }
+    
+        formElement.addEventListener("submit", handler)
+    </script>
+</body>
